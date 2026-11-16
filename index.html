@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Galeri Budaya dan Alam Buol</title>
+<style>
+  :root{--ink:#1f2a37;--muted:#5b6675;--bg:#fff8ee;--card:#fff;--budaya:#c2410c;--alam:#0f766e}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+  header{padding:28px 20px 12px;text-align:center}
+  header h1{font-size:clamp(1.6rem,4vw,2.6rem);letter-spacing:.5px}
+  header p{color:var(--muted);margin-top:6px;font-size:clamp(.95rem,2vw,1.2rem)}
+  .bar{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:14px 16px}
+  .bar button{border:2px solid #e7d9c4;background:#fff;color:var(--ink);padding:10px 20px;border-radius:999px;font-size:1rem;font-weight:600;cursor:pointer;transition:.15s}
+  .bar button:hover{transform:translateY(-2px)}
+  .bar button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .bar .play{background:#f59e0b;border-color:#f59e0b;color:#1f2a37}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px;padding:12px 20px 40px;max-width:1300px;margin:0 auto}
+  .card{background:var(--card);border-radius:18px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.08);cursor:pointer;transition:.2s;display:flex;flex-direction:column}
+  .card:hover{transform:translateY(-5px);box-shadow:0 10px 24px rgba(0,0,0,.15)}
+  .pic{height:170px;display:flex;align-items:center;justify-content:center;font-size:76px;position:relative;overflow:hidden}
+  .pic img{width:100%;height:100%;object-fit:cover}
+  .tag{position:absolute;top:10px;left:10px;font-size:.75rem;font-weight:700;color:#fff;padding:4px 10px;border-radius:999px}
+  .tag.Budaya{background:var(--budaya)} .tag.Alam{background:var(--alam)}
+  .info{padding:14px 16px 18px}
+  .info h3{font-size:1.1rem;margin-bottom:6px}
+  .info p{font-size:.92rem;color:var(--muted);line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  /* lightbox */
+  #lb{position:fixed;inset:0;background:rgba(15,23,42,.88);display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
+  #lb.open{display:flex}
+  .box{background:#fff;border-radius:22px;max-width:980px;width:100%;max-height:94vh;overflow:auto;display:grid;grid-template-columns:1.1fr 1fr}
+  .box .pic{height:100%;min-height:320px;font-size:150px;border-radius:0}
+  .txt{padding:26px 26px 22px;display:flex;flex-direction:column;gap:10px}
+  .txt h2{font-size:clamp(1.4rem,3vw,2rem)}
+  .txt p{font-size:clamp(1rem,1.8vw,1.2rem);line-height:1.6}
+  .txt small{color:var(--muted);margin-top:auto;font-size:.8rem}
+  .nav{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+  .nav button{border:0;padding:10px 18px;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:#eef2f7;color:var(--ink)}
+  .nav .close{background:#ef4444;color:#fff;margin-left:auto}
+  @media(max-width:700px){.box{grid-template-columns:1fr}.box .pic{min-height:200px;font-size:100px}}
+  footer{text-align:center;color:var(--muted);font-size:.85rem;padding:0 16px 30px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏝️ Galeri Budaya dan Alam Buol</h1>
+  <p>Mengenal kekayaan budaya dan keindahan alam Kabupaten Buol, Sulawesi Tengah</p>
+</header>
+
+<div class="bar" id="bar"></div>
+<main class="grid" id="grid"></main>
+
+<div id="lb"><div class="box" id="box"></div></div>
+<footer>Galeri Literasi · MOKOPANI</footer>
+
+<script>
+/* ==========================================================
+   CARA MENGGANTI GAMBAR DENGAN FOTO ASLI:
+   1) Unggah foto ke folder "foto" di repo (mis. foto/totamotami.jpg)
+   2) Isi properti foto di bawah, contoh: foto:"foto/totamotami.jpg"
+   Jika foto dikosongkan, kartu memakai gambar ikon (emoji).
+   ========================================================== */
+const DATA = [
+ {judul:"Tari Totamotami", kat:"Budaya", ikon:"💃", warna:["#fde68a","#fb923c"], foto:"",
+  isi:"Tari persembahan khas Buol untuk menyambut tamu kehormatan. Dibawakan oleh beberapa penari wanita dan identik dengan prosesi menabur beras kuning. Gerakannya melambangkan penghormatan, keramahan, dan ucapan selamat datang.",
+  sumber:"RRI Toli-Toli: Totamotami, Tari Persembahan Buol"},
+ {judul:"Tari Monamot", kat:"Budaya", ikon:"🎉", warna:["#fecdd3","#f472b6"], foto:"",
+  isi:"Tari kreasi baru dari Desa Bunobogu yang menggambarkan kehidupan masyarakat dan rasa gembira. Sering dipentaskan pada acara pernikahan, penjemputan tamu, ulang tahun daerah, dan acara adat lainnya.",
+  sumber:"Jurnal Invensi (2022): Tari Monamot dalam Pemahaman Masyarakat Desa Bunobogu"},
+ {judul:"Tradisi Molyobui", kat:"Budaya", ikon:"👧", warna:["#ddd6fe","#a78bfa"], foto:"",
+  isi:"Ritual adat Desa Bukamog yang menandai peralihan anak perempuan menuju usia remaja. Dimulai dengan mandi di sumur atau sungai, lalu berganti pakaian adat dan berhias, dan ditutup dengan tarian Molyobui.",
+  sumber:"Jurnal IAIN Sultan Amai Gorontalo (2024): Tradisi Molyobui"},
+ {judul:"Upacara Monuni", kat:"Budaya", ikon:"👶", warna:["#bae6fd","#38bdf8"], foto:"",
+  isi:"Upacara adat suku Buol untuk menempatkan bayi ke dalam ayunan (tuni). Upacara ini memakai perlengkapan adat yang disebut donden dan diawali dengan penjemputan ayunan oleh perempuan berpakaian adat.",
+  sumber:"Ensiklopedia: Monuni (p2k.stekom.ac.id)"},
+ {judul:"Mopalus: Gotong Royong", kat:"Budaya", ikon:"🤝", warna:["#bbf7d0","#4ade80"], foto:"",
+  isi:"Mopalus adalah tradisi gotong royong masyarakat Buol. Warga bahu-membahu memenuhi kebutuhan pangan, memperbaiki rumah, menyiapkan pernikahan dan syukuran, hingga memperbaiki saluran irigasi dan jalan.",
+  sumber:"Good News from Indonesia: Mengenal Suku Buol di Sulawesi Tengah"},
+ {judul:"Mongunom Manginano", kat:"Budaya", ikon:"🌿", warna:["#d9f99d","#84cc16"], foto:"",
+  isi:"Ritual pengobatan adat masyarakat Buol yang dipimpin oleh pelaku pengobatan dan masih dilakukan sampai sekarang. Tradisi ini sudah ditetapkan sebagai Warisan Budaya Takbenda (WBTb).",
+  sumber:"Good News from Indonesia; Jurnal Nuansa 21(1), 2024"},
+ {judul:"Bahasa Buol dan Tanah Suku Buol", kat:"Budaya", ikon:"🗣️", warna:["#fed7aa","#fb923c"], foto:"",
+  isi:"Suku Buol mendiami lima kecamatan: Biau, Momunu, Bokat, Bunobugu, dan Paleleh. Dalam kehidupan sehari-hari mereka menggunakan bahasa Buol, bahasa daerah yang terus dipelihara dan dikembangkan.",
+  sumber:"Good News from Indonesia: Mengenal Suku Buol"},
+
+ {judul:"Pemandian Alam Kumaligon", kat:"Alam", ikon:"💦", warna:["#a5f3fc","#22d3ee"], foto:"",
+  isi:"Objek wisata pemandian alam yang menjadi primadona warga Buol. Pemerintah daerah terus mendorong revitalisasi agar tempat ini makin aman dan nyaman bagi pengunjung.",
+  sumber:"RRI Toli-Toli: Wisata Pemandian Alam Kumaligon"},
+ {judul:"Tanjung Dako", kat:"Alam", ikon:"🌊", warna:["#bfdbfe","#3b82f6"], foto:"",
+  isi:"Kawasan wisata bahari yang jadi prioritas pengembangan Pemerintah Kabupaten Buol. Perencanaan desain teknis (DED) disiapkan agar pengembangannya terarah dan berkelanjutan.",
+  sumber:"RRI Toli-Toli: Potensi Wisata Bahari Buol"},
+ {judul:"Teluk Lilito dan Teluk Lebu", kat:"Alam", ikon:"⛵", warna:["#99f6e4","#14b8a6"], foto:"",
+  isi:"Di Desa Lilito, Kecamatan Paleleh, ada dua teluk yang indah, dekat perbatasan dengan Gorontalo. Desa Wisata Bahari Lilito masuk 300 besar Anugerah Desa Wisata Indonesia (ADWI) 2023.",
+  sumber:"Jadesta Kemenparekraf: Desa Wisata Bahari Lilito"},
+ {judul:"Wisata Bawah Laut Buol", kat:"Alam", ikon:"🤿", warna:["#a5b4fc","#6366f1"], foto:"",
+  isi:"Buol punya wilayah pesisir yang luas dan sejumlah pulau yang indah. Buol Diving Club menilai peluang wisata bahari dan selam di Buol sangat besar untuk dikembangkan.",
+  sumber:"RRI Toli-Toli: Potensi Wisata Bahari Buol Menjanjikan"},
+ {judul:"Pantai Jalan Trans Buol–Paleleh", kat:"Alam", ikon:"🏖️", warna:["#fef08a","#facc15"], foto:"",
+  isi:"Sepanjang jalan trans Buol–Paleleh, pengendara bisa menikmati hamparan pantai di sisi jalan. Pesisir utara Pulau Sulawesi ini adalah bagian dari keindahan alam Buol.",
+  sumber:"Wikipedia: Buol Regency (keterangan foto)"},
+ {judul:"Tabebuya di Jalur Dua Buol", kat:"Alam", ikon:"🌸", warna:["#fbcfe8","#ec4899"], foto:"",
+  isi:"Saat mekar, bunga tabebuya di jalur dua Buol menjadi spot favorit warga untuk berfoto dan bersantai. Pohon-pohonnya membuat kota terasa lebih indah dan teduh.",
+  sumber:"RRI Toli-Toli: Tabebuya Mekar, Jalur Dua Buol Jadi Spot Favorit"},
+ {judul:"Pegunungan Hijau Buol", kat:"Alam", ikon:"⛰️", warna:["#bbf7d0","#16a34a"], foto:"",
+  isi:"Buol terletak di pesisir utara Pulau Sulawesi. Udaranya tidak terlalu panas karena wilayah ini dikelilingi pegunungan yang hijau, yang ikut mempercantik pemandangan Buol.",
+  sumber:"Dokumen profil daerah Buol (dewey.petra.ac.id)"}
+];
+
+const bar=document.getElementById('bar'), grid=document.getElementById('grid'),
+      lb=document.getElementById('lb'), box=document.getElementById('box');
+let filter='Semua', list=[], idx=0, timer=null;
+
+function visual(d,big){
+  const bg=`background:linear-gradient(135deg,${d.warna[0]},${d.warna[1]})`;
+  return `<div class="pic" style="${bg}">${d.foto?`<img src="${d.foto}" alt="${d.judul}">`:d.ikon}${big?'':`<span class="tag ${d.kat}">${d.kat}</span>`}</div>`;
+}
+function renderBar(){
+  const cats=['Semua','Budaya','Alam'];
+  bar.innerHTML=cats.map(c=>`<button class="${c===filter?'on':''}" data-c="${c}">${c==='Semua'?'Semua ('+DATA.length+')':c+' ('+DATA.filter(x=>x.kat===c).length+')'}</button>`).join('')
+    +`<button class="play" id="play">▶ Tayang Otomatis</button>`;
+  bar.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{filter=b.dataset.c;renderBar();renderGrid()});
+  document.getElementById('play').onclick=()=>{list=current();open(0,true)};
+}
+function current(){return filter==='Semua'?DATA:DATA.filter(d=>d.kat===filter)}
+function renderGrid(){
+  list=current();
+  grid.innerHTML=list.map((d,i)=>`<article class="card" data-i="${i}">${visual(d)}<div class="info"><h3>${d.judul}</h3><p>${d.isi}</p></div></article>`).join('');
+  grid.querySelectorAll('.card').forEach(c=>c.onclick=()=>open(+c.dataset.i));
+}
+function show(){
+  const d=list[idx];
+  box.innerHTML=`${visual(d,true)}<div class="txt"><span class="tag ${d.kat}" style="position:static;align-self:flex-start">${d.kat}</span><h2>${d.judul}</h2><p>${d.isi}</p>
+  <div class="nav"><button id="pv">◀ Sebelumnya</button><button id="nx">Berikutnya ▶</button><button class="close" id="cl">✕ Tutup</button></div>
+  <small>Sumber: ${d.sumber} · ${idx+1}/${list.length}</small></div>`;
+  document.getElementById('pv').onclick=()=>step(-1);
+  document.getElementById('nx').onclick=()=>step(1);
+  document.getElementById('cl').onclick=close;
+}
+function open(i,auto){
+  idx=i;show();lb.classList.add('open');stop();
+  if(auto)timer=setInterval(()=>step(1),6000);
+}
+function step(n){idx=(idx+n+list.length)%list.length;show()}
+function stop(){if(timer){clearInterval(timer);timer=null}}
+function close(){lb.classList.remove('open');stop()}
+lb.addEventListener('click',e=>{if(e.target===lb)close()});
+document.addEventListener('keydown',e=>{
+  if(!lb.classList.contains('open'))return;
+  if(e.key==='ArrowRight')step(1); if(e.key==='ArrowLeft')step(-1); if(e.key==='Escape')close();
+});
+renderBar();renderGrid();
+</script>
+</body>
+</html>
